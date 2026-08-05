@@ -1,39 +1,102 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../utils/supabase';
 
-const STORAGE_KEY = 'glicemia-registros';
+export function useGlicemias(userId) {
+  const [registros, setRegistros] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-export function useGlicemias() {
-  const [registros, setRegistros] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
+  // Cargar registros desde Supabase
+  const cargarRegistros = useCallback(async () => {
+    if (!userId) return;
+    setCargando(true);
+    const { data, error } = await supabase
+      .from('registros')
+      .select('*')
+      .eq('user_id', userId)
+      .order('fecha', { ascending: false })
+      .order('hora', { ascending: false });
+
+    if (!error && data) {
+      // Mapear campos de la DB al formato de la app
+      setRegistros(
+        data.map((r) => ({
+          id: r.id,
+          fecha: r.fecha,
+          hora: r.hora,
+          valor: r.valor,
+          momento: r.momento,
+          insulina: r.insulina,
+          dosisInsulina: r.dosis_insulina,
+          notas: r.notas,
+          creadoEn: r.creado_en,
+        }))
+      );
     }
-  });
+    setCargando(false);
+  }, [userId]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
-  }, [registros]);
+    cargarRegistros();
+  }, [cargarRegistros]);
 
-  const agregarRegistro = (registro) => {
+  const agregarRegistro = async (registro) => {
     const nuevoRegistro = {
-      ...registro,
-      id: crypto.randomUUID(),
-      creadoEn: new Date().toISOString(),
+      user_id: userId,
+      fecha: registro.fecha,
+      hora: registro.hora,
+      valor: Number(registro.valor),
+      momento: registro.momento || null,
+      insulina: registro.insulina || null,
+      dosis_insulina: registro.dosisInsulina
+        ? Number(registro.dosisInsulina)
+        : null,
+      notas: registro.notas || null,
     };
-    setRegistros((prev) => [nuevoRegistro, ...prev]);
-    return nuevoRegistro;
+
+    const { data, error } = await supabase
+      .from('registros')
+      .insert([nuevoRegistro])
+      .select()
+      .single();
+
+    if (!error && data) {
+      const registroApp = {
+        id: data.id,
+        fecha: data.fecha,
+        hora: data.hora,
+        valor: data.valor,
+        momento: data.momento,
+        insulina: data.insulina,
+        dosisInsulina: data.dosis_insulina,
+        notas: data.notas,
+        creadoEn: data.creado_en,
+      };
+      setRegistros((prev) => [registroApp, ...prev]);
+      return registroApp;
+    }
+    return null;
   };
 
-  const eliminarRegistro = (id) => {
-    setRegistros((prev) => prev.filter((r) => r.id !== id));
+  const eliminarRegistro = async (id) => {
+    const { error } = await supabase
+      .from('registros')
+      .delete()
+      .eq('id', id);
+
+    if (!error) {
+      setRegistros((prev) => prev.filter((r) => r.id !== id));
+    }
   };
 
-  const editarRegistro = (id, datosActualizados) => {
-    setRegistros((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...datosActualizados } : r))
-    );
+  const borrarTodos = async () => {
+    const { error } = await supabase
+      .from('registros')
+      .delete()
+      .eq('user_id', userId);
+
+    if (!error) {
+      setRegistros([]);
+    }
   };
 
   const obtenerEstadisticas = (dias = 30) => {
@@ -83,19 +146,17 @@ export function useGlicemias() {
 
     return registros
       .filter((r) => new Date(r.fecha) >= fechaLimite)
-      .sort((a, b) => new Date(a.fecha + 'T' + a.hora) - new Date(b.fecha + 'T' + b.hora));
-  };
-
-  const borrarTodos = () => {
-    setRegistros([]);
-    localStorage.removeItem(STORAGE_KEY);
+      .sort(
+        (a, b) =>
+          new Date(a.fecha + 'T' + a.hora) - new Date(b.fecha + 'T' + b.hora)
+      );
   };
 
   return {
     registros,
+    cargando,
     agregarRegistro,
     eliminarRegistro,
-    editarRegistro,
     borrarTodos,
     obtenerEstadisticas,
     obtenerDatosGrafica,

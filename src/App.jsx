@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2, LogOut } from 'lucide-react';
 import RegistroForm from './components/RegistroForm';
 import Historial from './components/Historial';
 import Graficas from './components/Graficas';
 import Estadisticas from './components/Estadisticas';
 import ExportarPDF from './components/ExportarPDF';
+import Login from './components/Login';
 import { useGlicemias } from './hooks/useGlicemias';
+import { supabase } from './utils/supabase';
 
 const TABS = [
   { id: 'registro', label: 'Registrar', icon: Droplets },
@@ -17,9 +19,33 @@ const TABS = [
 
 export default function App() {
   const [tabActiva, setTabActiva] = useState('registro');
-  const { registros, agregarRegistro, eliminarRegistro, borrarTodos, obtenerEstadisticas, obtenerDatosGrafica } =
-    useGlicemias();
+  const [usuario, setUsuario] = useState(null);
+  const [cargandoAuth, setCargandoAuth] = useState(true);
   const [confirmarBorrar, setConfirmarBorrar] = useState(false);
+
+  const { registros, cargando, agregarRegistro, eliminarRegistro, borrarTodos, obtenerEstadisticas, obtenerDatosGrafica } =
+    useGlicemias(usuario?.id);
+
+  // Escuchar cambios de autenticación
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUsuario(session?.user ?? null);
+      setCargandoAuth(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUsuario(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUsuario(null);
+  };
 
   const handleBorrarTodos = () => {
     if (confirmarBorrar) {
@@ -31,7 +57,34 @@ export default function App() {
     }
   };
 
+  // Pantalla de carga inicial
+  if (cargandoAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-4 animate-pulse">
+            <Droplets className="w-10 h-10 text-white" />
+          </div>
+          <p className="text-gray-500">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no hay usuario, mostrar login
+  if (!usuario) {
+    return <Login />;
+  }
+
   const renderContenido = () => {
+    if (cargando) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-400 animate-pulse">Cargando registros...</p>
+        </div>
+      );
+    }
+
     switch (tabActiva) {
       case 'registro': return <RegistroForm onAgregar={agregarRegistro} />;
       case 'historial': return <Historial registros={registros} onEliminar={eliminarRegistro} />;
@@ -52,7 +105,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-800">GlicemiaApp</h1>
-              <p className="text-xs text-gray-500">Control de glucosa en sangre</p>
+              <p className="text-xs text-gray-500">{usuario.email}</p>
             </div>
             <div className="ml-auto flex items-center gap-2">
               {registros.length > 0 && (
@@ -73,6 +126,13 @@ export default function App() {
                   </button>
                 </>
               )}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium transition-colors"
+              >
+                <LogOut className="w-3 h-3" />
+                Salir
+              </button>
             </div>
           </div>
         </div>
