@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Droplets, ClipboardList, TrendingUp, Activity, FileText } from 'lucide-react';
+import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2 } from 'lucide-react';
 import RegistroForm from './components/RegistroForm';
 import Historial from './components/Historial';
 import Graficas from './components/Graficas';
@@ -17,8 +17,19 @@ const TABS = [
 
 export default function App() {
   const [tabActiva, setTabActiva] = useState('registro');
-  const { registros, agregarRegistro, eliminarRegistro, obtenerEstadisticas, obtenerDatosGrafica } =
+  const { registros, agregarRegistro, eliminarRegistro, borrarTodos, obtenerEstadisticas, obtenerDatosGrafica } =
     useGlicemias();
+  const [confirmarBorrar, setConfirmarBorrar] = useState(false);
+
+  const handleBorrarTodos = () => {
+    if (confirmarBorrar) {
+      borrarTodos();
+      setConfirmarBorrar(false);
+    } else {
+      setConfirmarBorrar(true);
+      setTimeout(() => setConfirmarBorrar(false), 3000);
+    }
+  };
 
   const renderContenido = () => {
     switch (tabActiva) {
@@ -43,11 +54,26 @@ export default function App() {
               <h1 className="text-lg font-bold text-gray-800">GlicemiaApp</h1>
               <p className="text-xs text-gray-500">Control de glucosa en sangre</p>
             </div>
-            {registros.length > 0 && (
-              <span className="ml-auto text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
-                {registros.length} registros
-              </span>
-            )}
+            <div className="ml-auto flex items-center gap-2">
+              {registros.length > 0 && (
+                <>
+                  <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                    {registros.length} registros
+                  </span>
+                  <button
+                    onClick={handleBorrarTodos}
+                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors ${
+                      confirmarBorrar
+                        ? 'bg-red-600 text-white'
+                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                    }`}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    {confirmarBorrar ? '¿Segura?' : 'Borrar todo'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

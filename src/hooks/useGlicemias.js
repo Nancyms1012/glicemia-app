@@ -86,11 +86,17 @@ export function useGlicemias() {
       .sort((a, b) => new Date(a.fecha + 'T' + a.hora) - new Date(b.fecha + 'T' + b.hora));
   };
 
+  const borrarTodos = () => {
+    setRegistros([]);
+    localStorage.removeItem(STORAGE_KEY);
+  };
+
   return {
     registros,
     agregarRegistro,
     eliminarRegistro,
     editarRegistro,
+    borrarTodos,
     obtenerEstadisticas,
     obtenerDatosGrafica,
   };
