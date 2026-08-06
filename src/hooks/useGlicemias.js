@@ -40,6 +40,16 @@ export function useGlicemias(userId) {
   }, [cargarRegistros]);
 
   const agregarRegistro = async (registro) => {
+    // Para "ambas", combinar las dosis en el campo dosisInsulina como texto
+    let dosisFinal = null;
+    if (registro.insulina === 'ambas') {
+      const lispro = registro.dosisLispro || 0;
+      const lantus = registro.dosisLantus || 0;
+      dosisFinal = null; // usaremos notas internas
+    } else {
+      dosisFinal = registro.dosisInsulina ? Number(registro.dosisInsulina) : null;
+    }
+
     const nuevoRegistro = {
       user_id: userId,
       fecha: registro.fecha,
@@ -47,10 +57,12 @@ export function useGlicemias(userId) {
       valor: Number(registro.valor),
       momento: registro.momento || null,
       insulina: registro.insulina || null,
-      dosis_insulina: registro.dosisInsulina
-        ? Number(registro.dosisInsulina)
-        : null,
-      notas: registro.notas || null,
+      dosis_insulina: registro.insulina === 'ambas'
+        ? Number(registro.dosisLispro || 0) + Number(registro.dosisLantus || 0)
+        : (registro.dosisInsulina ? Number(registro.dosisInsulina) : null),
+      notas: registro.insulina === 'ambas'
+        ? `${registro.notas ? registro.notas + ' | ' : ''}Lispro: ${registro.dosisLispro || 0}U, Lantus: ${registro.dosisLantus || 0}U`
+        : (registro.notas || null),
     };
 
     const { data, error } = await supabase

@@ -293,7 +293,7 @@ export default function Historial({ registros, onEliminar, onEditar }) {
                     {registro.insulina && registro.insulina !== 'ninguna' && (
                       <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
                         💉 {getInsulinaLabel(registro.insulina)}
-                        {registro.dosisInsulina && ` - ${registro.dosisInsulina} U`}
+                        {registro.insulina !== 'ambas' && registro.dosisInsulina && ` - ${registro.dosisInsulina} U`}
                       </p>
                     )}
                   </div>

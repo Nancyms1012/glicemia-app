@@ -13,6 +13,7 @@ export const MOMENTOS = [
 export const INSULINAS = [
   { value: 'lispro', label: 'Lispro (rápida)', tipo: 'rápida' },
   { value: 'lantus', label: 'Lantus (lenta)', tipo: 'lenta' },
+  { value: 'ambas', label: 'Ambas (Lispro + Lantus)', tipo: 'ambas' },
   { value: 'ninguna', label: 'No se aplicó insulina', tipo: 'ninguna' },
 ];
 

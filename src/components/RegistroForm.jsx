@@ -11,6 +11,8 @@ export default function RegistroForm({ onAgregar }) {
     momento: '',
     insulina: '',
     dosisInsulina: '',
+    dosisLispro: '',
+    dosisLantus: '',
     notas: '',
   });
   const [mensaje, setMensaje] = useState(null);
@@ -43,6 +45,8 @@ export default function RegistroForm({ onAgregar }) {
       momento: '',
       insulina: '',
       dosisInsulina: '',
+      dosisLispro: '',
+      dosisLantus: '',
       notas: '',
     });
 
@@ -172,48 +176,96 @@ export default function RegistroForm({ onAgregar }) {
               <Syringe className="w-4 h-4 text-blue-600" />
               <label className="text-sm font-medium text-blue-800">Insulina aplicada</label>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <select
-                  name="insulina"
-                  value={formData.insulina}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm"
-                >
-                  <option value="">Tipo de insulina...</option>
-                  {INSULINAS.map((ins) => (
-                    <option key={ins.value} value={ins.value}>
-                      {ins.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
+            <div>
+              <select
+                name="insulina"
+                value={formData.insulina}
+                onChange={handleChange}
+                className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm"
+              >
+                <option value="">Tipo de insulina...</option>
+                {INSULINAS.map((ins) => (
+                  <option key={ins.value} value={ins.value}>
+                    {ins.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Dosis para una sola insulina */}
+            {formData.insulina && formData.insulina !== 'ninguna' && formData.insulina !== 'ambas' && (
+              <div className="mt-3">
                 <div className="relative">
                   <input
                     type="number"
                     name="dosisInsulina"
                     value={formData.dosisInsulina}
                     onChange={handleChange}
-                    placeholder="Dosis"
+                    placeholder={`Dosis de ${formData.insulina === 'lispro' ? 'Lispro' : 'Lantus'}`}
                     min="0"
                     max="100"
                     step="0.5"
-                    disabled={!formData.insulina || formData.insulina === 'ninguna'}
-                    className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                    className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400">
                     U
                   </span>
                 </div>
+                <p className="mt-2 text-xs text-blue-600">
+                  {formData.insulina === 'lispro'
+                    ? '💉 Lispro: insulina de acción rápida (actúa en 15-30 min)'
+                    : '💉 Lantus: insulina de acción prolongada (actúa 24 hrs)'}
+                </p>
               </div>
-            </div>
-            {formData.insulina && formData.insulina !== 'ninguna' && (
-              <p className="mt-2 text-xs text-blue-600">
-                {formData.insulina === 'lispro'
-                  ? '💉 Lispro: insulina de acción rápida (actúa en 15-30 min)'
-                  : '💉 Lantus: insulina de acción prolongada (actúa 24 hrs)'}
-              </p>
+            )}
+
+            {/* Dosis separadas para ambas insulinas */}
+            {formData.insulina === 'ambas' && (
+              <div className="mt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-blue-700 font-medium">Lispro (rápida)</label>
+                    <div className="relative mt-1">
+                      <input
+                        type="number"
+                        name="dosisLispro"
+                        value={formData.dosisLispro}
+                        onChange={handleChange}
+                        placeholder="Dosis"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400">
+                        U
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs text-blue-700 font-medium">Lantus (lenta)</label>
+                    <div className="relative mt-1">
+                      <input
+                        type="number"
+                        name="dosisLantus"
+                        value={formData.dosisLantus}
+                        onChange={handleChange}
+                        placeholder="Dosis"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        className="w-full px-3 py-2 rounded-lg border border-blue-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-sm"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400">
+                        U
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600">
+                  💉 Lispro (rápida) + Lantus (prolongada 24 hrs)
+                </p>
+              </div>
             )}
           </div>
 
