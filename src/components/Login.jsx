@@ -61,7 +61,7 @@ export default function Login({ onLogin }) {
           <div className="inline-flex p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg mb-4">
             <Droplets className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">GlicemiaApp</h1>
+          <h1 className="text-2xl font-bold text-gray-800">SugarTrack</h1>
           <p className="text-sm text-gray-500 mt-1">Control de glucosa en sangre</p>
         </div>
 

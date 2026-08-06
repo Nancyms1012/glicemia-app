@@ -104,7 +104,7 @@ export default function App() {
               <Droplets className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-800">GlicemiaApp</h1>
+              <h1 className="text-lg font-bold text-gray-800">SugarTrack</h1>
               <p className="text-xs text-gray-500">{usuario.email}</p>
             </div>
             <div className="ml-auto flex items-center gap-2">

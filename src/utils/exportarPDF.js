@@ -10,7 +10,7 @@ export function exportarReportePDF(registros, estadisticas, nombrePaciente = 'Pa
   // Encabezado
   doc.setFontSize(20);
   doc.setTextColor(99, 102, 241);
-  doc.text('Reporte de Glicemias', 14, 22);
+  doc.text('Reporte de Glicemias - SugarTrack', 14, 22);
 
   doc.setFontSize(12);
   doc.setTextColor(100);
@@ -92,7 +92,7 @@ export function exportarReportePDF(registros, estadisticas, nombrePaciente = 'Pa
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text(
-      `Página ${i} de ${totalPaginas} - Generado por GlicemiaApp`,
+      `Página ${i} de ${totalPaginas} - Generado por SugarTrack`,
       14,
       doc.internal.pageSize.height - 10
     );
