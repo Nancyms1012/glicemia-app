@@ -88,6 +88,35 @@ export function useGlicemias(userId) {
     }
   };
 
+  const editarRegistro = async (id, datosActualizados) => {
+    const updateData = {
+      fecha: datosActualizados.fecha,
+      hora: datosActualizados.hora,
+      valor: Number(datosActualizados.valor),
+      momento: datosActualizados.momento || null,
+      insulina: datosActualizados.insulina || null,
+      dosis_insulina: datosActualizados.dosisInsulina
+        ? Number(datosActualizados.dosisInsulina)
+        : null,
+      notas: datosActualizados.notas || null,
+    };
+
+    const { error } = await supabase
+      .from('registros')
+      .update(updateData)
+      .eq('id', id);
+
+    if (!error) {
+      setRegistros((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, ...datosActualizados, valor: Number(datosActualizados.valor) } : r
+        )
+      );
+      return true;
+    }
+    return false;
+  };
+
   const borrarTodos = async () => {
     const { error } = await supabase
       .from('registros')
@@ -157,6 +186,7 @@ export function useGlicemias(userId) {
     cargando,
     agregarRegistro,
     eliminarRegistro,
+    editarRegistro,
     borrarTodos,
     obtenerEstadisticas,
     obtenerDatosGrafica,

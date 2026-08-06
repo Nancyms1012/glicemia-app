@@ -23,7 +23,7 @@ export default function App() {
   const [cargandoAuth, setCargandoAuth] = useState(true);
   const [confirmarBorrar, setConfirmarBorrar] = useState(false);
 
-  const { registros, cargando, agregarRegistro, eliminarRegistro, borrarTodos, obtenerEstadisticas, obtenerDatosGrafica } =
+  const { registros, cargando, agregarRegistro, eliminarRegistro, editarRegistro, borrarTodos, obtenerEstadisticas, obtenerDatosGrafica } =
     useGlicemias(usuario?.id);
 
   // Escuchar cambios de autenticación
@@ -87,7 +87,7 @@ export default function App() {
 
     switch (tabActiva) {
       case 'registro': return <RegistroForm onAgregar={agregarRegistro} />;
-      case 'historial': return <Historial registros={registros} onEliminar={eliminarRegistro} />;
+      case 'historial': return <Historial registros={registros} onEliminar={eliminarRegistro} onEditar={editarRegistro} />;
       case 'graficas': return <Graficas registros={registros} obtenerDatosGrafica={obtenerDatosGrafica} />;
       case 'estadisticas': return <Estadisticas registros={registros} obtenerEstadisticas={obtenerEstadisticas} />;
       case 'exportar': return <ExportarPDF registros={registros} obtenerEstadisticas={obtenerEstadisticas} />;

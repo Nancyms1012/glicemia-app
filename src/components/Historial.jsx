@@ -1,14 +1,16 @@
 import { useState, useMemo } from 'react';
-import { ClipboardList, Trash2, Search, Filter } from 'lucide-react';
+import { ClipboardList, Trash2, Search, Filter, Pencil, X, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { MOMENTOS, INSULINAS, getColorPorValor, getEtiquetaPorValor } from '../utils/constants';
 
-export default function Historial({ registros, onEliminar }) {
+export default function Historial({ registros, onEliminar, onEditar }) {
   const [busqueda, setBusqueda] = useState('');
   const [filtroMomento, setFiltroMomento] = useState('');
   const [filtroRango, setFiltroRango] = useState('');
   const [confirmarEliminar, setConfirmarEliminar] = useState(null);
+  const [editando, setEditando] = useState(null);
+  const [formEditar, setFormEditar] = useState({});
 
   const registrosFiltrados = useMemo(() => {
     return registros
@@ -31,6 +33,33 @@ export default function Historial({ registros, onEliminar }) {
       setConfirmarEliminar(id);
       setTimeout(() => setConfirmarEliminar(null), 3000);
     }
+  };
+
+  const handleEditar = (registro) => {
+    setEditando(registro.id);
+    setFormEditar({
+      fecha: registro.fecha,
+      hora: registro.hora,
+      valor: String(registro.valor),
+      momento: registro.momento || '',
+      insulina: registro.insulina || '',
+      dosisInsulina: registro.dosisInsulina ? String(registro.dosisInsulina) : '',
+      notas: registro.notas || '',
+    });
+  };
+
+  const handleGuardarEdicion = async () => {
+    if (!formEditar.valor || Number(formEditar.valor) <= 0) return;
+    const exito = await onEditar(editando, formEditar);
+    if (exito !== false) {
+      setEditando(null);
+      setFormEditar({});
+    }
+  };
+
+  const handleCancelarEdicion = () => {
+    setEditando(null);
+    setFormEditar({});
   };
 
   const getMomentoLabel = (value) => {
@@ -112,62 +141,186 @@ export default function Historial({ registros, onEliminar }) {
         {/* Lista de registros */}
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
           {registrosFiltrados.map((registro) => (
-            <div
-              key={registro.id}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors"
-            >
-              <div
-                className="w-2 h-12 rounded-full flex-shrink-0"
-                style={{ backgroundColor: getColorPorValor(registro.valor) }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-bold" style={{ color: getColorPorValor(registro.valor) }}>
-                    {registro.valor}
-                  </span>
-                  <span className="text-xs text-gray-400">mg/dL</span>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{
-                      backgroundColor: `${getColorPorValor(registro.valor)}20`,
-                      color: getColorPorValor(registro.valor),
-                    }}
-                  >
-                    {getEtiquetaPorValor(registro.valor)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                  <span>{format(new Date(registro.fecha), "d 'de' MMM", { locale: es })}</span>
-                  <span>•</span>
-                  <span>{registro.hora}</span>
-                  {registro.momento && (
-                    <>
-                      <span>•</span>
-                      <span>{getMomentoLabel(registro.momento)}</span>
-                    </>
+            <div key={registro.id}>
+              {editando === registro.id ? (
+                /* Formulario de edición */
+                <div className="p-4 rounded-xl border-2 border-indigo-200 bg-indigo-50 space-y-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-indigo-700">Editando registro</span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={handleGuardarEdicion}
+                        className="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
+                        title="Guardar"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={handleCancelarEdicion}
+                        className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                        title="Cancelar"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-600">Glicemia *</label>
+                      <input
+                        type="number"
+                        value={formEditar.valor}
+                        onChange={(e) => setFormEditar({ ...formEditar, valor: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm font-bold text-center"
+                        min="20"
+                        max="600"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Fecha</label>
+                      <input
+                        type="date"
+                        value={formEditar.fecha}
+                        onChange={(e) => setFormEditar({ ...formEditar, fecha: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Hora</label>
+                      <input
+                        type="time"
+                        value={formEditar.hora}
+                        onChange={(e) => setFormEditar({ ...formEditar, hora: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-600">Momento</label>
+                      <select
+                        value={formEditar.momento}
+                        onChange={(e) => setFormEditar({ ...formEditar, momento: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                      >
+                        <option value="">Sin momento</option>
+                        {MOMENTOS.map((m) => (
+                          <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600">Insulina</label>
+                      <select
+                        value={formEditar.insulina}
+                        onChange={(e) => setFormEditar({ ...formEditar, insulina: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                      >
+                        <option value="">Sin insulina</option>
+                        {INSULINAS.map((ins) => (
+                          <option key={ins.value} value={ins.value}>{ins.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {formEditar.insulina && formEditar.insulina !== 'ninguna' && (
+                    <div>
+                      <label className="text-xs text-gray-600">Dosis (U)</label>
+                      <input
+                        type="number"
+                        value={formEditar.dosisInsulina}
+                        onChange={(e) => setFormEditar({ ...formEditar, dosisInsulina: e.target.value })}
+                        className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        placeholder="Dosis"
+                      />
+                    </div>
                   )}
+
+                  <div>
+                    <label className="text-xs text-gray-600">Notas</label>
+                    <input
+                      type="text"
+                      value={formEditar.notas}
+                      onChange={(e) => setFormEditar({ ...formEditar, notas: e.target.value })}
+                      className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                      placeholder="Notas..."
+                    />
+                  </div>
                 </div>
-                {registro.notas && (
-                  <p className="text-xs text-gray-400 mt-1 truncate">{registro.notas}</p>
-                )}
-                {registro.insulina && registro.insulina !== 'ninguna' && (
-                  <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
-                    💉 {getInsulinaLabel(registro.insulina)}
-                    {registro.dosisInsulina && ` - ${registro.dosisInsulina} U`}
-                  </p>
-                )}
-              </div>
-              <button
-                onClick={() => handleEliminar(registro.id)}
-                className={`p-2 rounded-lg transition-colors flex-shrink-0 ${
-                  confirmarEliminar === registro.id
-                    ? 'bg-red-100 text-red-600'
-                    : 'text-gray-300 hover:text-red-400 hover:bg-red-50'
-                }`}
-                title={confirmarEliminar === registro.id ? 'Clic de nuevo para confirmar' : 'Eliminar'}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              ) : (
+                /* Vista normal del registro */
+                <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
+                  <div
+                    className="w-2 h-12 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: getColorPorValor(registro.valor) }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-lg font-bold" style={{ color: getColorPorValor(registro.valor) }}>
+                        {registro.valor}
+                      </span>
+                      <span className="text-xs text-gray-400">mg/dL</span>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          backgroundColor: `${getColorPorValor(registro.valor)}20`,
+                          color: getColorPorValor(registro.valor),
+                        }}
+                      >
+                        {getEtiquetaPorValor(registro.valor)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      <span>{format(new Date(registro.fecha), "d 'de' MMM", { locale: es })}</span>
+                      <span>•</span>
+                      <span>{registro.hora}</span>
+                      {registro.momento && (
+                        <>
+                          <span>•</span>
+                          <span>{getMomentoLabel(registro.momento)}</span>
+                        </>
+                      )}
+                    </div>
+                    {registro.notas && (
+                      <p className="text-xs text-gray-400 mt-1 truncate">{registro.notas}</p>
+                    )}
+                    {registro.insulina && registro.insulina !== 'ninguna' && (
+                      <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
+                        💉 {getInsulinaLabel(registro.insulina)}
+                        {registro.dosisInsulina && ` - ${registro.dosisInsulina} U`}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    <button
+                      onClick={() => handleEditar(registro)}
+                      className="p-2 rounded-lg text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleEliminar(registro.id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        confirmarEliminar === registro.id
+                          ? 'bg-red-100 text-red-600'
+                          : 'text-gray-300 hover:text-red-400 hover:bg-red-50'
+                      }`}
+                      title={confirmarEliminar === registro.id ? 'Clic de nuevo para confirmar' : 'Eliminar'}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
