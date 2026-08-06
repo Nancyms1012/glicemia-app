@@ -23,14 +23,34 @@ export default function Login({ onLogin }) {
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+        
+        // Si la sesión se creó directamente (sin confirmación de email), ya entramos
+        if (data?.session) {
+          // Login automático exitoso
+          setLoading(false);
+          return;
+        }
+        
+        // Si no hay sesión, intentar login directo
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        
+        if (!loginError) {
+          // Login exitoso después de registro
+          setLoading(false);
+          return;
+        }
+        
         setMensaje({
           tipo: 'exito',
-          texto: '¡Cuenta creada! Revisa tu email para confirmar (si es necesario) o inicia sesión.',
+          texto: '¡Cuenta creada! Ahora haz clic en "Iniciar Sesión" para entrar.',
         });
         setModo('login');
         setLoading(false);
