@@ -44,13 +44,27 @@ export default function Historial({ registros, onEliminar, onEditar }) {
       momento: registro.momento || '',
       insulina: registro.insulina || '',
       dosisInsulina: registro.dosisInsulina ? String(registro.dosisInsulina) : '',
+      dosisLispro: '',
+      dosisLantus: '',
       notas: registro.notas || '',
     });
   };
 
   const handleGuardarEdicion = async () => {
     if (!formEditar.valor || Number(formEditar.valor) <= 0) return;
-    const exito = await onEditar(editando, formEditar);
+    
+    // Si es "ambas", guardar las dosis en las notas
+    let datosAGuardar = { ...formEditar };
+    if (formEditar.insulina === 'ambas') {
+      const lispro = formEditar.dosisLispro || 0;
+      const lantus = formEditar.dosisLantus || 0;
+      datosAGuardar.dosisInsulina = String(Number(lispro) + Number(lantus));
+      // Agregar info de dosis a las notas si no está ya
+      const notasBase = (formEditar.notas || '').replace(/\s*\|\s*Lispro:.*$/, '').replace(/^Lispro:.*$/, '').trim();
+      datosAGuardar.notas = `${notasBase ? notasBase + ' | ' : ''}Lispro: ${lispro}U, Lantus: ${lantus}U`;
+    }
+    
+    const exito = await onEditar(editando, datosAGuardar);
     if (exito !== false) {
       setEditando(null);
       setFormEditar({});
@@ -226,7 +240,7 @@ export default function Historial({ registros, onEliminar, onEditar }) {
                     </div>
                   </div>
 
-                  {formEditar.insulina && formEditar.insulina !== 'ninguna' && (
+                  {formEditar.insulina && formEditar.insulina !== 'ninguna' && formEditar.insulina !== 'ambas' && (
                     <div>
                       <label className="text-xs text-gray-600">Dosis (U)</label>
                       <input
@@ -239,6 +253,37 @@ export default function Historial({ registros, onEliminar, onEditar }) {
                         step="0.5"
                         placeholder="Dosis"
                       />
+                    </div>
+                  )}
+
+                  {formEditar.insulina === 'ambas' && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-gray-600">Lispro (U)</label>
+                        <input
+                          type="number"
+                          value={formEditar.dosisLispro}
+                          onChange={(e) => setFormEditar({ ...formEditar, dosisLispro: e.target.value })}
+                          className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                          min="0"
+                          max="100"
+                          step="0.5"
+                          placeholder="Lispro"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600">Lantus (U)</label>
+                        <input
+                          type="number"
+                          value={formEditar.dosisLantus}
+                          onChange={(e) => setFormEditar({ ...formEditar, dosisLantus: e.target.value })}
+                          className="w-full px-2 py-1.5 rounded-lg border border-gray-300 text-sm"
+                          min="0"
+                          max="100"
+                          step="0.5"
+                          placeholder="Lantus"
+                        />
+                      </div>
                     </div>
                   )}
 
