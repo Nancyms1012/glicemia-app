@@ -25,12 +25,22 @@ export default function RegistroForm({ onAgregar }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.valor || Number(formData.valor) <= 0) {
-      setMensaje({ tipo: 'error', texto: 'Por favor ingresa un valor de glicemia válido' });
+    const tieneGlicemia = formData.valor && Number(formData.valor) > 0;
+    const tieneInsulina =
+      formData.insulina &&
+      formData.insulina !== 'ninguna' &&
+      (formData.dosisInsulina || formData.dosisLispro || formData.dosisLantus);
+
+    // Debe tener al menos glicemia o insulina
+    if (!tieneGlicemia && !tieneInsulina) {
+      setMensaje({
+        tipo: 'error',
+        texto: 'Ingresa una glicemia o registra una dosis de insulina',
+      });
       return;
     }
 
-    if (Number(formData.valor) > 600) {
+    if (tieneGlicemia && Number(formData.valor) > 600) {
       setMensaje({ tipo: 'error', texto: 'El valor parece demasiado alto. Verifica la medición.' });
       return;
     }
@@ -90,7 +100,7 @@ export default function RegistroForm({ onAgregar }) {
           {/* Valor de glicemia */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Glicemia (mg/dL) *
+              Glicemia (mg/dL) <span className="text-gray-400 font-normal">(opcional si registras solo insulina)</span>
             </label>
             <div className="relative">
               <input

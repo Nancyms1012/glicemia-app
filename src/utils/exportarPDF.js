@@ -61,7 +61,7 @@ export function exportarReportePDF(registros, estadisticas, nombrePaciente = 'Pa
       format(new Date(r.fecha), 'dd/MM/yyyy'),
       r.hora,
       r.momento || '-',
-      `${r.valor} mg/dL`,
+      r.valor != null && r.valor !== '' ? `${r.valor} mg/dL` : '-',
       r.insulina && r.insulina !== 'ninguna'
         ? `${r.insulina === 'lispro' ? 'Lispro' : 'Lantus'}${r.dosisInsulina ? ' ' + r.dosisInsulina + 'U' : ''}`
         : '-',

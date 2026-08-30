@@ -54,7 +54,7 @@ export function useGlicemias(userId) {
       user_id: userId,
       fecha: registro.fecha,
       hora: registro.hora,
-      valor: Number(registro.valor),
+      valor: registro.valor ? Number(registro.valor) : null,
       momento: registro.momento || null,
       insulina: registro.insulina || null,
       dosis_insulina: registro.insulina === 'ambas'
@@ -145,7 +145,7 @@ export function useGlicemias(userId) {
     fechaLimite.setDate(fechaLimite.getDate() - dias);
 
     const registrosFiltrados = registros.filter(
-      (r) => new Date(r.fecha) >= fechaLimite
+      (r) => new Date(r.fecha) >= fechaLimite && r.valor != null && r.valor !== ''
     );
 
     if (registrosFiltrados.length === 0) {

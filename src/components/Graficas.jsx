@@ -28,7 +28,7 @@ export default function Graficas({ registros }) {
   const datosFiltrados = useMemo(() => {
     const fechaLimite = subDays(new Date(), periodo);
     return registros
-      .filter((r) => new Date(r.fecha) >= fechaLimite)
+      .filter((r) => new Date(r.fecha) >= fechaLimite && r.valor != null && r.valor !== '')
       .sort((a, b) => new Date(a.fecha + 'T' + a.hora) - new Date(b.fecha + 'T' + b.hora));
   }, [registros, periodo]);
 

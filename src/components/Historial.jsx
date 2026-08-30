@@ -51,7 +51,12 @@ export default function Historial({ registros, onEliminar, onEditar }) {
   };
 
   const handleGuardarEdicion = async () => {
-    if (!formEditar.valor || Number(formEditar.valor) <= 0) return;
+    const tieneGlicemia = formEditar.valor && Number(formEditar.valor) > 0;
+    const tieneInsulina =
+      formEditar.insulina &&
+      formEditar.insulina !== 'ninguna' &&
+      (formEditar.dosisInsulina || formEditar.dosisLispro || formEditar.dosisLantus);
+    if (!tieneGlicemia && !tieneInsulina) return;
     
     // Si es "ambas", guardar las dosis en las notas
     let datosAGuardar = { ...formEditar };
@@ -303,23 +308,31 @@ export default function Historial({ registros, onEliminar, onEditar }) {
                 <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-colors">
                   <div
                     className="w-2 h-12 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: getColorPorValor(registro.valor) }}
+                    style={{ backgroundColor: (registro.valor != null && registro.valor !== '') ? getColorPorValor(registro.valor) : '#3b82f6' }}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-bold" style={{ color: getColorPorValor(registro.valor) }}>
-                        {registro.valor}
-                      </span>
-                      <span className="text-xs text-gray-400">mg/dL</span>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full font-medium"
-                        style={{
-                          backgroundColor: `${getColorPorValor(registro.valor)}20`,
-                          color: getColorPorValor(registro.valor),
-                        }}
-                      >
-                        {getEtiquetaPorValor(registro.valor)}
-                      </span>
+                      {registro.valor != null && registro.valor !== '' ? (
+                        <>
+                          <span className="text-lg font-bold" style={{ color: getColorPorValor(registro.valor) }}>
+                            {registro.valor}
+                          </span>
+                          <span className="text-xs text-gray-400">mg/dL</span>
+                          <span
+                            className="text-xs px-2 py-0.5 rounded-full font-medium"
+                            style={{
+                              backgroundColor: `${getColorPorValor(registro.valor)}20`,
+                              color: getColorPorValor(registro.valor),
+                            }}
+                          >
+                            {getEtiquetaPorValor(registro.valor)}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-semibold text-blue-600 flex items-center gap-1">
+                          💉 Solo insulina
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
                       <span>{format(new Date(registro.fecha), "d 'de' MMM", { locale: es })}</span>
