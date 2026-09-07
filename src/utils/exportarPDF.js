@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { parseFechaLocal } from './constants';
 
 export function exportarReportePDF(registros, estadisticas, nombrePaciente = 'Paciente') {
   const doc = new jsPDF();
@@ -58,7 +59,7 @@ export function exportarReportePDF(registros, estadisticas, nombrePaciente = 'Pa
     .sort((a, b) => new Date(b.fecha + 'T' + b.hora) - new Date(a.fecha + 'T' + a.hora))
     .slice(0, 100)
     .map((r) => [
-      format(new Date(r.fecha), 'dd/MM/yyyy'),
+      format(parseFechaLocal(r.fecha), 'dd/MM/yyyy'),
       r.hora,
       r.momento || '-',
       r.valor != null && r.valor !== '' ? `${r.valor} mg/dL` : '-',

@@ -36,3 +36,11 @@ export const getEtiquetaPorValor = (valor) => {
   if (v <= 180) return 'En rango';
   return 'Hiperglicemia';
 };
+
+// Parsea una fecha "yyyy-MM-dd" como fecha LOCAL (evita el corrimiento por zona horaria).
+// new Date("2026-09-07") se interpreta como UTC medianoche y en zonas UTC-X muestra el día anterior.
+export const parseFechaLocal = (fechaStr) => {
+  if (!fechaStr) return new Date();
+  const [anio, mes, dia] = fechaStr.split('-').map(Number);
+  return new Date(anio, mes - 1, dia);
+};

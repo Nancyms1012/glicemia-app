@@ -15,6 +15,7 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import { format, subDays, startOfDay, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { parseFechaLocal } from '../utils/constants';
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -35,7 +36,7 @@ export default function Graficas({ registros }) {
   const datosLineaTendencia = useMemo(() => {
     if (datosFiltrados.length === 0) return null;
     const labels = datosFiltrados.map((r) =>
-      format(new Date(r.fecha), 'dd/MM', { locale: es }) + ' ' + r.hora
+      format(parseFechaLocal(r.fecha), 'dd/MM', { locale: es }) + ' ' + r.hora
     );
     const valores = datosFiltrados.map((r) => Number(r.valor));
     return {

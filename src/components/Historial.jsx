@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { ClipboardList, Trash2, Search, Filter, Pencil, X, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { MOMENTOS, INSULINAS, getColorPorValor, getEtiquetaPorValor } from '../utils/constants';
+import { MOMENTOS, INSULINAS, getColorPorValor, getEtiquetaPorValor, parseFechaLocal } from '../utils/constants';
 
 export default function Historial({ registros, onEliminar, onEditar }) {
   const [busqueda, setBusqueda] = useState('');
@@ -335,7 +335,7 @@ export default function Historial({ registros, onEliminar, onEditar }) {
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                      <span>{format(new Date(registro.fecha), "d 'de' MMM", { locale: es })}</span>
+                      <span>{format(parseFechaLocal(registro.fecha), "d 'de' MMM", { locale: es })}</span>
                       <span>•</span>
                       <span>{registro.hora}</span>
                       {registro.momento && (
