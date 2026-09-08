@@ -4,7 +4,7 @@ import RegistroForm from './components/RegistroForm';
 import Historial from './components/Historial';
 import Graficas from './components/Graficas';
 import Estadisticas from './components/Estadisticas';
-import ExportarPDF from './components/ExportarPDF';
+import OnePager from './components/OnePager';
 import Login from './components/Login';
 import { useGlicemias } from './hooks/useGlicemias';
 import { supabase } from './utils/supabase';
@@ -14,7 +14,7 @@ const TABS = [
   { id: 'historial', label: 'Historial', icon: ClipboardList },
   { id: 'graficas', label: 'Gráficas', icon: TrendingUp },
   { id: 'estadisticas', label: 'Estadísticas', icon: Activity },
-  { id: 'exportar', label: 'Exportar', icon: FileText },
+  { id: 'onepager', label: 'One Pager', icon: FileText },
 ];
 
 export default function App() {
@@ -90,7 +90,7 @@ export default function App() {
       case 'historial': return <Historial registros={registros} onEliminar={eliminarRegistro} onEditar={editarRegistro} />;
       case 'graficas': return <Graficas registros={registros} obtenerDatosGrafica={obtenerDatosGrafica} />;
       case 'estadisticas': return <Estadisticas registros={registros} obtenerEstadisticas={obtenerEstadisticas} />;
-      case 'exportar': return <ExportarPDF registros={registros} obtenerEstadisticas={obtenerEstadisticas} obtenerRangosPorPeriodo={obtenerRangosPorPeriodo} />;
+      case 'onepager': return <OnePager registros={registros} obtenerEstadisticas={obtenerEstadisticas} obtenerRangosPorPeriodo={obtenerRangosPorPeriodo} />;
       default: return null;
     }
   };
