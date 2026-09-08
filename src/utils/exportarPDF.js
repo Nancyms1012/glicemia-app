@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { generarGraficaTendencia, generarGraficaPromedios } from './generarGraficas';
+import { dibujarTablaBGLog } from './tablaBGLog';
 
 export async function exportarReportePDF({
   registros,
@@ -10,6 +11,8 @@ export async function exportarReportePDF({
   rangos15,
   rangos30,
   nombrePaciente = 'Paciente',
+  incluirTabla = false,
+  incluirComentarios = false,
 }) {
   const doc = new jsPDF();
   const anchoPagina = doc.internal.pageSize.getWidth();
@@ -187,6 +190,12 @@ export async function exportarReportePDF({
     const altoImg = anchoGrafica * (240 / 800);
     doc.addImage(imgPromedios, 'PNG', 14, y, anchoGrafica, altoImg);
     y += altoImg;
+  }
+
+  // ===== TABLA BG LOG (opcional) =====
+  if (incluirTabla) {
+    doc.addPage();
+    dibujarTablaBGLog(doc, registros, incluirComentarios, 20);
   }
 
   // ===== PIE DE PÁGINA =====

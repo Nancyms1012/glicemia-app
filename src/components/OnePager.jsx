@@ -27,6 +27,8 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
   const [nombrePaciente, setNombrePaciente] = useState('');
   const [exportando, setExportando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
+  const [incluirTabla, setIncluirTabla] = useState(true);
+  const [incluirComentarios, setIncluirComentarios] = useState(false);
 
   const stats = useMemo(() => obtenerEstadisticas(30), [registros]);
   const rangos7 = useMemo(() => obtenerRangosPorPeriodo(7), [registros]);
@@ -127,6 +129,8 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
         rangos15,
         rangos30,
         nombrePaciente: nombrePaciente || 'Paciente',
+        incluirTabla,
+        incluirComentarios,
       });
       setMensaje({ tipo: 'exito', texto: '¡PDF generado exitosamente!' });
     } catch (error) {
@@ -195,6 +199,33 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
             <FileDown className="w-4 h-4" />
             {exportando ? 'Generando...' : 'Exportar PDF'}
           </button>
+        </div>
+
+        {/* Opciones de exportación */}
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+          <p className="text-xs font-semibold text-gray-500 mb-2">Opciones del reporte:</p>
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={incluirTabla}
+              onChange={(e) => {
+                setIncluirTabla(e.target.checked);
+                if (!e.target.checked) setIncluirComentarios(false);
+              }}
+              className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-rose-300"
+            />
+            Incluir tabla detallada (BG Log por día y hora)
+          </label>
+          <label className={`flex items-center gap-2 text-sm cursor-pointer ${incluirTabla ? 'text-gray-600' : 'text-gray-300'}`}>
+            <input
+              type="checkbox"
+              checked={incluirComentarios}
+              disabled={!incluirTabla}
+              onChange={(e) => setIncluirComentarios(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-rose-300 disabled:opacity-40"
+            />
+            Incluir comentarios (notas) en la tabla
+          </label>
         </div>
       </div>
 
