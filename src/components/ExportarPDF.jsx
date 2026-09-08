@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { FileDown, FileText, User } from 'lucide-react';
 import { exportarReportePDF } from '../utils/exportarPDF';
 
-export default function ExportarPDF({ registros, obtenerEstadisticas }) {
+export default function ExportarPDF({ registros, obtenerEstadisticas, obtenerRangosPorPeriodo }) {
   const [nombrePaciente, setNombrePaciente] = useState('');
   const [diasReporte, setDiasReporte] = useState(30);
   const [exportando, setExportando] = useState(false);
   const [mensaje, setMensaje] = useState(null);
 
-  const handleExportar = () => {
+  const handleExportar = async () => {
     if (registros.length === 0) {
       setMensaje({ tipo: 'error', texto: 'No hay registros para exportar' });
       setTimeout(() => setMensaje(null), 3000);
@@ -18,9 +18,21 @@ export default function ExportarPDF({ registros, obtenerEstadisticas }) {
     try {
       const stats = obtenerEstadisticas(diasReporte);
       const fechaLimite = new Date();
-      fechaLimite.setDate(fechaLimite.getDate() - diasReporte);
-      const registrosFiltrados = registros.filter((r) => new Date(r.fecha) >= fechaLimite);
-      exportarReportePDF(registrosFiltrados, stats, nombrePaciente || 'Paciente');
+      fechaLimite.setHours(0, 0, 0, 0);
+      fechaLimite.setDate(fechaLimite.getDate() - (diasReporte - 1));
+      const registrosFiltrados = registros.filter((r) => {
+        const [a, m, d] = r.fecha.split('-').map(Number);
+        return new Date(a, m - 1, d) >= fechaLimite;
+      });
+
+      await exportarReportePDF({
+        registros: registrosFiltrados,
+        estadisticas: stats,
+        rangos7: obtenerRangosPorPeriodo(7),
+        rangos15: obtenerRangosPorPeriodo(15),
+        rangos30: obtenerRangosPorPeriodo(30),
+        nombrePaciente: nombrePaciente || 'Paciente',
+      });
       setMensaje({ tipo: 'exito', texto: '¡Reporte PDF generado exitosamente!' });
     } catch (error) {
       console.error('Error al exportar:', error);
@@ -78,11 +90,11 @@ export default function ExportarPDF({ registros, obtenerEstadisticas }) {
           <div className="bg-gray-50 rounded-lg p-4">
             <h4 className="text-sm font-semibold text-gray-600 mb-2">El reporte incluirá:</h4>
             <ul className="text-sm text-gray-500 space-y-1">
-              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Datos del paciente y fecha</li>
-              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Resumen estadístico (promedio, máx, mín, tiempo en rango)</li>
-              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Resumen de insulina aplicada (Lispro/Lantus y dosis)</li>
-              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Tabla detallada de todas las mediciones</li>
-              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Notas relevantes de cada registro</li>
+              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Resumen general (promedio, máx, mín, mediciones, en rango)</li>
+              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Distribución por rangos (bajo/normal/alto) en 7, 15 y 30 días</li>
+              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Cantidad de veces y porcentaje de cada rango</li>
+              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Gráfica de tendencia de glicemia</li>
+              <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Gráfica de promedios diarios</li>
             </ul>
           </div>
 

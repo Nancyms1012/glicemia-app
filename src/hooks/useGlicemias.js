@@ -181,6 +181,34 @@ export function useGlicemias(userId) {
     };
   };
 
+  // Calcula distribución por rangos (bajo/normal/alto) para un periodo dado
+  const obtenerRangosPorPeriodo = (dias) => {
+    const fechaLimite = new Date();
+    fechaLimite.setHours(0, 0, 0, 0);
+    fechaLimite.setDate(fechaLimite.getDate() - (dias - 1));
+
+    const conValor = registros.filter((r) => {
+      if (r.valor == null || r.valor === '') return false;
+      const [a, m, d] = r.fecha.split('-').map(Number);
+      const f = new Date(a, m - 1, d);
+      return f >= fechaLimite;
+    });
+
+    const total = conValor.length;
+    const bajo = conValor.filter((r) => Number(r.valor) < 70).length;
+    const normal = conValor.filter((r) => Number(r.valor) >= 70 && Number(r.valor) <= 180).length;
+    const alto = conValor.filter((r) => Number(r.valor) > 180).length;
+
+    const pct = (n) => (total > 0 ? Math.round((n / total) * 100) : 0);
+
+    return {
+      total,
+      bajo: { cantidad: bajo, porcentaje: pct(bajo) },
+      normal: { cantidad: normal, porcentaje: pct(normal) },
+      alto: { cantidad: alto, porcentaje: pct(alto) },
+    };
+  };
+
   const obtenerDatosGrafica = (dias = 30) => {
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() - dias);
@@ -201,6 +229,7 @@ export function useGlicemias(userId) {
     editarRegistro,
     borrarTodos,
     obtenerEstadisticas,
+    obtenerRangosPorPeriodo,
     obtenerDatosGrafica,
   };
 }
