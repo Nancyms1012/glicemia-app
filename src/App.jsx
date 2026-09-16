@@ -1,20 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2, LogOut } from 'lucide-react';
+import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2, LogOut, Bell } from 'lucide-react';
 import RegistroForm from './components/RegistroForm';
 import Historial from './components/Historial';
 import Graficas from './components/Graficas';
 import Estadisticas from './components/Estadisticas';
 import OnePager from './components/OnePager';
+import Recordatorios from './components/Recordatorios';
+import AlertaRecordatorio from './components/AlertaRecordatorio';
 import Login from './components/Login';
 import { useGlicemias } from './hooks/useGlicemias';
+import { useRecordatorios } from './hooks/useRecordatorios';
 import { supabase } from './utils/supabase';
 
 const TABS = [
   { id: 'registro', label: 'Registrar', icon: Droplets },
   { id: 'historial', label: 'Historial', icon: ClipboardList },
   { id: 'graficas', label: 'Gráficas', icon: TrendingUp },
-  { id: 'estadisticas', label: 'Estadísticas', icon: Activity },
-  { id: 'onepager', label: 'One Pager', icon: FileText },
+  { id: 'estadisticas', label: 'Stats', icon: Activity },
+  { id: 'recordatorios', label: 'Alertas', icon: Bell },
+  { id: 'onepager', label: 'Reporte', icon: FileText },
 ];
 
 export default function App() {
@@ -25,6 +29,8 @@ export default function App() {
 
   const { registros, cargando, agregarRegistro, eliminarRegistro, editarRegistro, borrarTodos, obtenerEstadisticas, obtenerRangosPorPeriodo, obtenerDatosGrafica } =
     useGlicemias(usuario?.id);
+  const { horarios, activados, cargando: cargandoRec, guardar: guardarRecordatorios } =
+    useRecordatorios(usuario?.id);
 
   // Escuchar cambios de autenticación
   useEffect(() => {
@@ -90,6 +96,7 @@ export default function App() {
       case 'historial': return <Historial registros={registros} onEliminar={eliminarRegistro} onEditar={editarRegistro} />;
       case 'graficas': return <Graficas registros={registros} obtenerDatosGrafica={obtenerDatosGrafica} />;
       case 'estadisticas': return <Estadisticas registros={registros} obtenerEstadisticas={obtenerEstadisticas} />;
+      case 'recordatorios': return <Recordatorios horarios={horarios} activados={activados} guardar={guardarRecordatorios} cargando={cargandoRec} />;
       case 'onepager': return <OnePager registros={registros} obtenerEstadisticas={obtenerEstadisticas} obtenerRangosPorPeriodo={obtenerRangosPorPeriodo} />;
       default: return null;
     }
@@ -137,6 +144,13 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      <AlertaRecordatorio
+        horarios={horarios}
+        activados={activados}
+        registros={registros}
+        onIrARegistrar={() => setTabActiva('registro')}
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-6 pb-24">
         {renderContenido()}
