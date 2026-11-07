@@ -16,6 +16,18 @@ export default function Login({ onLogin }) {
     setMensaje(null);
 
     try {
+      if (modo === 'recuperar') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin,
+        });
+        if (error) throw error;
+        setMensaje({
+          tipo: 'exito',
+          texto: 'Si el correo está registrado, te enviamos un enlace para crear una nueva contraseña. Revisa también spam.',
+        });
+        setLoading(false);
+        return;
+      }
       if (modo === 'login') {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -58,7 +70,11 @@ export default function Login({ onLogin }) {
       }
     } catch (error) {
       let texto = 'Error al iniciar sesión';
-      if (error.message.includes('Invalid login')) {
+      if (modo === 'recuperar') {
+        texto = error.message.toLowerCase().includes('rate')
+          ? 'Demasiados intentos. Espera unos minutos e intenta de nuevo.'
+          : 'No se pudo enviar el correo. Intenta de nuevo.';
+      } else if (error.message.includes('Invalid login')) {
         texto = 'Email o contraseña incorrectos';
       } else if (error.message.includes('already registered')) {
         texto = 'Este email ya está registrado. Intenta iniciar sesión.';
@@ -88,11 +104,13 @@ export default function Login({ onLogin }) {
         {/* Formulario */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-lg font-bold text-gray-800 mb-1">
-            {modo === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            {modo === 'login' ? 'Iniciar Sesión' : modo === 'recuperar' ? 'Recuperar contraseña' : 'Crear Cuenta'}
           </h2>
           <p className="text-sm text-gray-500 mb-6">
             {modo === 'login'
               ? 'Ingresa con tu email y contraseña'
+              : modo === 'recuperar'
+              ? 'Escribe tu email y te enviaremos un enlace para crear una nueva contraseña'
               : 'Regístrate para guardar tus datos'}
           </p>
 
@@ -124,6 +142,7 @@ export default function Login({ onLogin }) {
               </div>
             </div>
 
+            {modo !== 'recuperar' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
               <div className="relative">
@@ -145,7 +164,17 @@ export default function Login({ onLogin }) {
                   {mostrarPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {modo === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => { setModo('recuperar'); setMensaje(null); }}
+                  className="mt-2 text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
             </div>
+            )}
 
             <button
               type="submit"
@@ -154,6 +183,11 @@ export default function Login({ onLogin }) {
             >
               {loading ? (
                 <span className="animate-pulse">Cargando...</span>
+              ) : modo === 'recuperar' ? (
+                <>
+                  <Mail className="w-5 h-5" />
+                  Enviar enlace
+                </>
               ) : modo === 'login' ? (
                 <>
                   <LogIn className="w-5 h-5" />
@@ -178,6 +212,8 @@ export default function Login({ onLogin }) {
             >
               {modo === 'login'
                 ? '¿No tienes cuenta? Regístrate'
+                : modo === 'recuperar'
+                ? 'Volver a iniciar sesión'
                 : '¿Ya tienes cuenta? Inicia sesión'}
             </button>
           </div>
