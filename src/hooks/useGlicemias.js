@@ -129,17 +129,6 @@ export function useGlicemias(userId) {
     return false;
   };
 
-  const borrarTodos = async () => {
-    const { error } = await supabase
-      .from('registros')
-      .delete()
-      .eq('user_id', userId);
-
-    if (!error) {
-      setRegistros([]);
-    }
-  };
-
   const obtenerEstadisticas = (dias = 30) => {
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() - dias);
@@ -227,7 +216,6 @@ export function useGlicemias(userId) {
     agregarRegistro,
     eliminarRegistro,
     editarRegistro,
-    borrarTodos,
     obtenerEstadisticas,
     obtenerRangosPorPeriodo,
     obtenerDatosGrafica,
