@@ -8,6 +8,7 @@ import OnePager from './components/OnePager';
 import Recordatorios from './components/Recordatorios';
 import AlertaRecordatorio from './components/AlertaRecordatorio';
 import Login from './components/Login';
+import Respaldo from './components/Respaldo';
 import { useGlicemias } from './hooks/useGlicemias';
 import { useRecordatorios } from './hooks/useRecordatorios';
 import { supabase } from './utils/supabase';
@@ -115,6 +116,7 @@ export default function App() {
               <p className="text-xs text-gray-500">{usuario.email}</p>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              <Respaldo usuario={usuario} />
               {registros.length > 0 && (
                 <>
                   <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
