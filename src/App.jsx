@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Droplets, ClipboardList, TrendingUp, Activity, FileText, Trash2, LogOut, Bell } from 'lucide-react';
+import { Droplets, ClipboardList, TrendingUp, Activity, FileText, LogOut, Bell } from 'lucide-react';
 import RegistroForm from './components/RegistroForm';
 import Historial from './components/Historial';
 import Graficas from './components/Graficas';
@@ -28,10 +28,9 @@ export default function App() {
   const [tabActiva, setTabActiva] = useState('registro');
   const [usuario, setUsuario] = useState(null);
   const [cargandoAuth, setCargandoAuth] = useState(true);
-  const [confirmarBorrar, setConfirmarBorrar] = useState(false);
   const [recuperando, setRecuperando] = useState(false);
 
-  const { registros, cargando, agregarRegistro, eliminarRegistro, editarRegistro, borrarTodos, obtenerEstadisticas, obtenerRangosPorPeriodo, obtenerDatosGrafica } =
+  const { registros, cargando, agregarRegistro, eliminarRegistro, editarRegistro, obtenerEstadisticas, obtenerRangosPorPeriodo, obtenerDatosGrafica } =
     useGlicemias(usuario?.id);
   const { horarios, activados, cargando: cargandoRec, guardar: guardarRecordatorios } =
     useRecordatorios(usuario?.id);
@@ -56,16 +55,6 @@ export default function App() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUsuario(null);
-  };
-
-  const handleBorrarTodos = () => {
-    if (confirmarBorrar) {
-      borrarTodos();
-      setConfirmarBorrar(false);
-    } else {
-      setConfirmarBorrar(true);
-      setTimeout(() => setConfirmarBorrar(false), 3000);
-    }
   };
 
   // Pantalla de carga inicial
@@ -128,22 +117,10 @@ export default function App() {
               <Respaldo usuario={usuario} />
               <CambiarPassword usuario={usuario} />
               {registros.length > 0 && (
-                <>
                   <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
                     {registros.length} registros
                   </span>
-                  <button
-                    onClick={handleBorrarTodos}
-                    className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium transition-colors ${
-                      confirmarBorrar
-                        ? 'bg-red-600 text-white'
-                        : 'bg-red-100 text-red-600 hover:bg-red-200'
-                    }`}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                    {confirmarBorrar ? '¿Segura?' : 'Borrar todo'}
-                  </button>
-                </>
+
               )}
               <button
                 onClick={handleLogout}
