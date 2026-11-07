@@ -1,16 +1,27 @@
-# React + Vite
+# SugarTrack – Control de glucosa
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+App web para registrar glicemias e insulina, ver historial, gráficas y estadísticas, y generar un reporte (PDF one-pager) para el médico.
 
-Currently, two official plugins are available:
+- **Producción:** https://glicemia.raceclubhub.com (también https://glicemia-app.pages.dev)
+- **Datos reales de uso:** no hacer cambios destructivos en la base de datos.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tecnología
+React 19 · Vite · Tailwind 4 · Supabase (auth correo/contraseña + base de datos) · Chart.js · jsPDF · lucide-react.
 
-## React Compiler
+## Desarrollo
+```bash
+npm install
+npm run dev      # desarrollo local
+npm run build    # genera dist/
+npm run lint
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Despliegue
+Cloudflare Pages (proyecto `glicemia-app`) conectado a este repo. Cada push/merge a `main` publica automáticamente. Las ramas y PR generan una vista previa.
+Configuración: preset Vite · build `npm run build` · output `dist`.
 
-## Expanding the Oxlint configuration
+## Base de datos (Supabase)
+El esquema y las políticas de seguridad (RLS) están en [`supabase/schema.sql`](supabase/schema.sql). Se ejecuta en el SQL Editor y es seguro repetirlo (no borra datos).
+En Authentication → URL Configuration: Site URL `https://glicemia.raceclubhub.com`, y Redirect URLs con ese dominio y `https://glicemia-app.pages.dev` (necesario para el correo de recuperar contraseña).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Más contexto, decisiones y pendientes en [`HANDOFF.md`](HANDOFF.md).

@@ -9,14 +9,28 @@ export function useGlicemias(userId) {
   const cargarRegistros = useCallback(async () => {
     if (!userId) return;
     setCargando(true);
-    const { data, error } = await supabase
-      .from('registros')
-      .select('*')
-      .eq('user_id', userId)
-      .order('fecha', { ascending: false })
-      .order('hora', { ascending: false });
+    // Supabase devuelve máximo 1000 filas por consulta: se pagina para traer todo.
+    const TAM = 1000;
+    let data = [];
+    let error = null;
+    for (let desde = 0; ; desde += TAM) {
+      const res = await supabase
+        .from('registros')
+        .select('*')
+        .eq('user_id', userId)
+        .order('fecha', { ascending: false })
+        .order('hora', { ascending: false })
+        .order('id', { ascending: true })
+        .range(desde, desde + TAM - 1);
+      if (res.error) {
+        error = res.error;
+        break;
+      }
+      data = data.concat(res.data);
+      if (res.data.length < TAM) break;
+    }
 
-    if (!error && data) {
+    if (!error) {
       // Mapear campos de la DB al formato de la app
       setRegistros(
         data.map((r) => ({
