@@ -9,6 +9,8 @@ import Recordatorios from './components/Recordatorios';
 import AlertaRecordatorio from './components/AlertaRecordatorio';
 import Login from './components/Login';
 import Respaldo from './components/Respaldo';
+import CambiarPassword from './components/CambiarPassword';
+import NuevaPassword from './components/NuevaPassword';
 import { useGlicemias } from './hooks/useGlicemias';
 import { useRecordatorios } from './hooks/useRecordatorios';
 import { supabase } from './utils/supabase';
@@ -27,6 +29,7 @@ export default function App() {
   const [usuario, setUsuario] = useState(null);
   const [cargandoAuth, setCargandoAuth] = useState(true);
   const [confirmarBorrar, setConfirmarBorrar] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
 
   const { registros, cargando, agregarRegistro, eliminarRegistro, editarRegistro, borrarTodos, obtenerEstadisticas, obtenerRangosPorPeriodo, obtenerDatosGrafica } =
     useGlicemias(usuario?.id);
@@ -41,7 +44,8 @@ export default function App() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') setRecuperando(true);
         setUsuario(session?.user ?? null);
       }
     );
@@ -76,6 +80,11 @@ export default function App() {
         </div>
       </div>
     );
+  }
+
+  // Llegó desde el enlace del correo: pedir la nueva contraseña
+  if (recuperando && usuario) {
+    return <NuevaPassword onTerminar={() => setRecuperando(false)} />;
   }
 
   // Si no hay usuario, mostrar login
@@ -117,6 +126,7 @@ export default function App() {
             </div>
             <div className="ml-auto flex items-center gap-2">
               <Respaldo usuario={usuario} />
+              <CambiarPassword usuario={usuario} />
               {registros.length > 0 && (
                 <>
                   <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
