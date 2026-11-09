@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { parseFechaLocal } from '../utils/constants';
 import { exportarReportePDF } from '../utils/exportarPDF';
+import { contarNotas } from '../utils/adendumNotas';
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -29,6 +30,19 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
   const [mensaje, setMensaje] = useState(null);
   const [incluirTabla, setIncluirTabla] = useState(true);
   const [incluirComentarios, setIncluirComentarios] = useState(false);
+  const [incluirAdendum, setIncluirAdendum] = useState(true);
+
+  const cantidadNotas = useMemo(() => {
+    const limite = new Date();
+    limite.setHours(0, 0, 0, 0);
+    limite.setDate(limite.getDate() - 29);
+    return contarNotas(
+      registros.filter((r) => {
+        const [a, m, d] = r.fecha.split('-').map(Number);
+        return new Date(a, m - 1, d) >= limite;
+      })
+    );
+  }, [registros]);
 
   const stats = useMemo(() => obtenerEstadisticas(30), [registros]);
   const rangos7 = useMemo(() => obtenerRangosPorPeriodo(7), [registros]);
@@ -131,6 +145,8 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
         nombrePaciente: nombrePaciente || 'Paciente',
         incluirTabla,
         incluirComentarios,
+        incluirAdendum,
+        periodoTexto: 'últimos 30 días',
       });
       setMensaje({ tipo: 'exito', texto: '¡PDF generado exitosamente!' });
     } catch (error) {
@@ -225,6 +241,16 @@ export default function OnePager({ registros, obtenerEstadisticas, obtenerRangos
               className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-rose-300 disabled:opacity-40"
             />
             Incluir comentarios (notas) en la tabla
+          </label>
+          <label className={`flex items-center gap-2 text-sm cursor-pointer ${cantidadNotas > 0 ? 'text-gray-600' : 'text-gray-300'}`}>
+            <input
+              type="checkbox"
+              checked={incluirAdendum && cantidadNotas > 0}
+              disabled={cantidadNotas === 0}
+              onChange={(e) => setIncluirAdendum(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-rose-600 focus:ring-rose-300 disabled:opacity-40"
+            />
+            Incluir adendum con todas las notas completas ({cantidadNotas} {cantidadNotas === 1 ? 'nota' : 'notas'})
           </label>
         </div>
       </div>
