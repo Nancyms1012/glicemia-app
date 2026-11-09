@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { generarGraficaTendencia, generarGraficaPromedios } from './generarGraficas';
 import { dibujarTablaBGLog } from './tablaBGLog';
+import { dibujarAdendumNotas } from './adendumNotas';
 
 export async function exportarReportePDF({
   registros,
@@ -13,6 +14,8 @@ export async function exportarReportePDF({
   nombrePaciente = 'Paciente',
   incluirTabla = false,
   incluirComentarios = false,
+  incluirAdendum = false,
+  periodoTexto = '',
 }) {
   const doc = new jsPDF();
   const anchoPagina = doc.internal.pageSize.getWidth();
@@ -196,6 +199,11 @@ export async function exportarReportePDF({
   if (incluirTabla) {
     doc.addPage();
     dibujarTablaBGLog(doc, registros, incluirComentarios, 20);
+  }
+
+  // ===== ADENDUM DE NOTAS (opcional) =====
+  if (incluirAdendum) {
+    dibujarAdendumNotas(doc, registros, periodoTexto);
   }
 
   // ===== PIE DE PÁGINA =====
